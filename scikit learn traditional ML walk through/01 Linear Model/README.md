@@ -13,4 +13,5 @@
   - F1: 2*TP/(2*TP + FP + FN)
   - ROC-AUC score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html, slide threshold, see:
     - TPR against FPR
+8. OvR is using many binary and find the one with big P, Multinomial is using softmax (optimise softmax directly), multinomial usually better on overlap classes.
 
