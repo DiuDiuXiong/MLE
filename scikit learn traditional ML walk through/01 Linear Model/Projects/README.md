@@ -52,12 +52,12 @@ Projects suggested by GPT to cover different topics. Here's an overview of the q
 - Doc References: SGD.
 - Why Useful: Realistic noisy data; introduces scalable solvers.
 
-## 8. Text Sentiment Classification (IMDb Reviews)
+## 8. Multi-Label Text Classification
 - Difficulty: Advanced
-- Project Purpose: Predict positive vs negative sentiment; stretch → tune penalties (L1, L2, ElasticNet) with LogisticRegressionCV.
-- Points Examined: Logistic Regression on text, penalties, regularization paths.
-- Doc References: Logistic regression, Elastic Net for classification.
-- Why Useful: Large dataset; practice with solvers and hyperparameter tuning.
+- Project Purpose: Predict multiple tags (e.g., movie genres) from text. Stretch → compare One-vs-Rest Logistic Regression vs linear SVM.
+- Points Examined: Multi-label setting, OvR strategy, evaluation with F1-micro vs F1-macro.
+- Doc References: Scikit-learn multi-label docs, OvR/OvO strategies.
+- Why Useful: Expands classification intuition from binary → multi-class → multi-label, which is very real-world (tags, recommendations, incident categories).
 
 ## 9. ElasticNet Feature Selection (Diabetes Dataset)
 - Difficulty: Intermediate
