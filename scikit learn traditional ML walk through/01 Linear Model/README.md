@@ -14,4 +14,8 @@
   - ROC-AUC score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html, slide threshold, see:
     - TPR against FPR
 8. OvR is using many binary and find the one with big P, Multinomial is using softmax (optimise softmax directly), multinomial usually better on overlap classes.
-
+9. Interview QQs:
+   - p-values: https://www.investopedia.com/terms/p/p-value.asp
+   - https://www.geeksforgeeks.org/machine-learning/top-linear-regression-interview-questions/
+   - https://www.interviewquery.com/p/linear-regression-interview-questions
+   - https://www.analyticsvidhya.com/blog/2021/06/25-questions-to-test-your-skills-on-linear-regression-algorithm/
