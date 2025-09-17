@@ -12,3 +12,6 @@ Idea Check: https://www.youtube.com/watch?v=UBDgSHPxVME
 - `GaussianProcessClassifier` y vote on classes
 
 ![img_2.png](img_2.png)
+
+## Pros/Cons
+![img_3.png](img_3.png)
