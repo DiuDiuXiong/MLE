@@ -417,3 +417,64 @@ $$
 $$
 
 This is the **multiclass generalization** of the logistic regression gradient.
+
+---
+
+## 🔎 Why Log-Odds Are Linear (Logistic & Softmax)
+
+### Binary (Logistic) Case
+
+Starting from the sigmoid probability for the positive class:
+$$
+P(y=1\mid x)=\frac{e^{z}}{1+e^{z}},\quad z=w^T x + b.
+$$
+
+Compute the **odds** of the positive class:
+$$
+\frac{P(y=1\mid x)}{1-P(y=1\mid x)}
+=\frac{\frac{e^{z}}{1+e^{z}}}{1-\frac{e^{z}}{1+e^{z}}}
+=\frac{e^{z}}{1}
+= e^{z}.
+$$
+
+Take the logarithm to get **log-odds (logit)**:
+$$
+\log\frac{P(y=1\mid x)}{1-P(y=1\mid x)}=\log(e^{z})=z=w^T x+b.
+$$
+
+**Conclusion.** The log-odds are a **linear function of the features**.
+
+---
+
+### Multiclass (Softmax) Case
+
+From softmax:
+$$
+P(y=k\mid x)=\frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}},\quad z_k=w_k^T x + b_k.
+$$
+
+Consider the **odds ratio between two classes** \(k\) and \(r\):
+$$
+\frac{P(y=k\mid x)}{P(y=r\mid x)}
+=\frac{\frac{e^{z_k}}{\sum_{j} e^{z_j}}}{\frac{e^{z_r}}{\sum_{j} e^{z_j}}}
+=\frac{e^{z_k}}{e^{z_r}}
+= e^{\,z_k - z_r}.
+$$
+
+Take the logarithm:
+$$
+\log\frac{P(y=k\mid x)}{P(y=r\mid x)}
+= z_k - z_r
+= (w_k - w_r)^T x + (b_k - b_r).
+$$
+
+**Conclusion.** For softmax, the **pairwise log-odds between any two classes** are **linear in $x$**, with coefficient vector $w_k - w_r$ and intercept $b_k - b_r$. (Equivalently, fixing a reference class $r$ makes each class’s log-odds linear.)
+
+---
+
+## Deep ML Q
+- https://www.deep-ml.com/problems/39
+- https://www.deep-ml.com/problems/105
+- https://www.deep-ml.com/problems/23
+- https://www.deep-ml.com/problems/104
+- https://www.deep-ml.com/problems/106
