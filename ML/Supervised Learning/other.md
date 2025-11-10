@@ -4,6 +4,7 @@ Other separate math that arise during notes.
 ## List
 - Moore–Penrose Pseudoinverse (for Linear Regression)
 - SVD & how it can solve ^
+- Lagrangian for LDA/SVM
 
 ## 🧱 Moore–Penrose Pseudoinverse
 
@@ -224,3 +225,121 @@ SVD reveals how $X$ behaves geometrically:
 By reversing those steps and inverting only the meaningful stretches,  
 the pseudoinverse $X^+$ becomes a **stable, minimal-norm generalized inverse** —  
 it “undoes” $X$’s action as much as possible, even when $X$ isn’t invertible.
+
+---
+
+## ✅ What Is the Lagrangian?
+
+When we want to **maximize or minimize** a function **subject to a constraint**, we can’t just take the derivative of the original function — the constraint must be enforced too.
+
+The **Lagrangian** is a technique from optimization that allows us to combine:
+
+- the **objective** we want to optimize
+- the **constraint** we must satisfy
+
+into **one differentiable expression**.
+
+---
+
+### ✅ Why Solving the Lagrangian Conditions Gives the Correct Solution
+
+For a constrained optimization problem:
+
+- **Objective:** maximize/minimize $f(w)$  
+- **Constraint:** $g(w) = 0$
+
+we form the Lagrangian:
+
+$$
+\mathcal{L}(w, \lambda) = f(w) - \lambda g(w).
+$$
+
+To solve the problem, we take derivatives:
+
+1. $$\frac{\partial \mathcal{L}}{\partial w} = 0$$  
+2. $$\frac{\partial \mathcal{L}}{\partial \lambda} = 0$$
+
+Why does this work?
+
+---
+
+### ✅ Reason 1 — The constraint is enforced by the $\lambda$ derivative  
+Taking the derivative w.r.t. $\lambda$ gives:
+
+$$
+-\;g(w) = 0
+\quad\Longrightarrow\quad
+g(w) = 0.
+$$
+
+So **any solution must lie on the constraint surface**.  
+This guarantees the solution satisfies the constraint exactly.
+
+---
+
+### ✅ Reason 2 — Stationary points of the Lagrangian correspond to stationary points of the constrained problem
+
+On the surface where $g(w)=0$, the feasible directions you’re allowed to move in are restricted.  
+Setting
+
+$$
+\frac{\partial \mathcal{L}}{\partial w} = 0
+$$
+
+ensures that:
+
+- the gradient of the objective **cannot decrease/increase** in any *feasible* direction,
+- because it becomes aligned with the gradient of the constraint function.
+
+In other words:
+
+> At the optimum of a constrained problem, the gradient of the objective must  
+> lie in the same direction as the gradient of the constraint.
+
+The Lagrangian exactly captures this alignment condition.
+
+---
+
+### ✅ Reason 3 — The KKT / Lagrange multiplier conditions are *necessary* for optimality  
+Lagrange multiplier theory shows that, under smoothness conditions:
+
+> Any maximum/minimum that satisfies a constraint must satisfy  
+> the Lagrange conditions  
+> $$\nabla_w \mathcal{L} = 0,\quad \nabla_\lambda \mathcal{L} = 0.$$
+
+So solving these equations gives all **candidate solutions** to the constrained optimization.
+
+---
+
+### ✅ Reason 4 — It reduces the constrained problem to an unconstrained one  
+
+The beauty of the Lagrangian is:
+
+- The original constrained problem  
+  $$\max f(w) \quad \text{s.t.} \quad g(w)=0$$  
+- becomes an **unconstrained** saddle-point problem  
+  $$\max_{w} \min_{\lambda} \mathcal{L}(w,\lambda).$$
+
+Taking derivatives is simply finding stationary points of this unconstrained form.
+
+---
+
+### ✅ Summary (Why Steps 1 & 2 Are Sufficient)
+
+- Step **2** enforces the constraint  
+  (because $\partial L/\partial \lambda = 0 \Rightarrow g(w)=0$)
+- Step **1** enforces the optimum under that constraint  
+  (because it ensures no feasible direction can increase/decrease the objective)
+
+Together:
+
+$$
+\frac{\partial L}{\partial w}=0,\quad
+\frac{\partial L}{\partial \lambda}=0
+$$
+
+give the **necessary conditions** for solving the constrained optimization problem.
+
+These stationary points are the candidates for maxima or minima under the constraint.
+
+
