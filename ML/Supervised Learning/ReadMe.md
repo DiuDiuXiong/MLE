@@ -7,3 +7,4 @@
 - [generative model_nb](generative_nb.md)
 - [generative_model_lda_qda](generative_lda_qda.md)
 - [tree](tree.md)
+- [svm](svm.md)
