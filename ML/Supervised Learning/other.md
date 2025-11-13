@@ -5,6 +5,7 @@ Other separate math that arise during notes.
 - Moore–Penrose Pseudoinverse (for Linear Regression)
 - SVD & how it can solve ^
 - Lagrangian for LDA/SVM
+- SVD to solve Eigen Vector/Value Problem
 
 ## 🧱 Moore–Penrose Pseudoinverse
 
@@ -229,6 +230,7 @@ it “undoes” $X$’s action as much as possible, even when $X$ isn’t invert
 ---
 
 ## ✅ What Is the Lagrangian?
+- https://www.bilibili.com/video/BV15T411f7DY/?spm_id_from=333.337.search-card.all.click&vd_source=ba1abb9135396041995d7213839e69e3 Best explain video
 
 When we want to **maximize or minimize** a function **subject to a constraint**, we can’t just take the derivative of the original function — the constraint must be enforced too.
 
@@ -342,4 +344,114 @@ give the **necessary conditions** for solving the constrained optimization probl
 
 These stationary points are the candidates for maxima or minima under the constraint.
 
+---
 
+## 🧮 SVD to Solve Eigen Vector/Value Problem
+
+### 1️⃣ From Eigenvalue Problem to SVD
+
+Many problems in machine learning (like PCA) require solving an **eigenvalue problem**:
+
+$$
+S w = \lambda w
+$$
+
+where $S$ is a symmetric matrix (e.g., covariance $S = X^\top X$),  
+$w$ is an **eigenvector**, and $\lambda$ is the **eigenvalue**.
+
+Instead of directly decomposing $S$, we can use the **Singular Value Decomposition (SVD)** of $X$ to find the same results — often more stably and efficiently.
+
+---
+
+### 2️⃣ SVD Decomposition
+
+The SVD of any matrix $X \in \mathbb{R}^{m \times n}$ is:
+
+$$
+X = U \Sigma V^\top
+$$
+
+where:
+- $U \in \mathbb{R}^{m \times m}$ → orthonormal **left singular vectors**  
+- $V \in \mathbb{R}^{n \times n}$ → orthonormal **right singular vectors**  
+- $\Sigma \in \mathbb{R}^{m \times n}$ → diagonal matrix of **singular values**  
+  $\Sigma = \text{diag}(\sigma_1, \sigma_2, \dots, \sigma_r)$
+
+---
+
+### 3️⃣ Connecting SVD to Eigen-Decomposition
+
+Let’s compute $X^\top X$ using the SVD:
+
+$$
+\begin{aligned}
+X^\top X 
+&= (U \Sigma V^\top)^\top (U \Sigma V^\top) \\
+&= V \Sigma^\top U^\top U \Sigma V^\top \\
+&= V \Sigma^2 V^\top
+\end{aligned}
+$$
+
+since $U^\top U = I$.
+
+Thus:
+- The **columns of $V$** are eigenvectors of $X^\top X$.
+- The **squared singular values** $\sigma_i^2$ are eigenvalues of $X^\top X$.
+
+---
+
+### 4️⃣ Verifying the Eigen Equation
+
+Check explicitly:
+
+$$
+(X^\top X) V = (V \Sigma^2 V^\top) V = V \Sigma^2 (V^\top V) = V \Sigma^2
+$$
+
+✅ Matches the eigenvalue equation $S w = \lambda w$.
+
+So:
+$$
+w_i = v_i, \quad \lambda_i = \sigma_i^2
+$$
+
+---
+
+### 5️⃣ Dual Relationship ($X X^\top$)
+
+Similarly, you can show:
+
+$$
+X X^\top = U \Sigma^2 U^\top
+$$
+
+Hence:
+- Columns of $U$ are eigenvectors of $X X^\top$
+- Eigenvalues are again $\Sigma^2$
+
+---
+
+### 6️⃣ Why Use SVD
+
+| Reason | Explanation |
+|--------|--------------|
+| **Numerical stability** | SVD avoids squaring the condition number of $X$. |
+| **Efficiency** | When $m \gg n$, computing eigenvectors of $S = X^\top X$ via SVD is cheaper. |
+| **Generality** | Works even when $X$ is non-square. |
+| **Direct connection to PCA** | $V$ gives principal directions; $\Sigma^2$ gives explained variances. |
+
+---
+
+### ✅ Summary
+
+| Concept | SVD Formulation |
+|----------|---------------|
+| Decomposition | $X = U \Sigma V^\top$ |
+| $X^\top X$ eigen-decomp | $X^\top X = V \Sigma^2 V^\top$ |
+| Eigenvectors | Columns of $V$ |
+| Eigenvalues | $\Sigma^2$ |
+| Dual form | $X X^\top = U \Sigma^2 U^\top$ |
+
+**In short:**  
+> The SVD of $X$ implicitly gives the eigen-decomposition of both $X^\top X$ and $X X^\top$.  
+> That’s why PCA and many spectral methods use SVD instead of direct eigen-decomposition.
