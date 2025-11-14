@@ -450,3 +450,52 @@ No explicit mapping $\phi$ is ever computed — the entire algorithm depends onl
 By expressing everything in terms of **dot products**, kernel PCA can perform the same variance-maximizing projection  
 in a **high-dimensional (even infinite)** space — uncovering nonlinear patterns that ordinary PCA cannot see.
 
+---
+
+## 🧩 Comparison — PCA vs t-SNE vs UMAP
+
+| Aspect | **PCA** | **t-SNE** | **UMAP** |
+|:--|:--|:--|:--|
+| **Type** | Linear | Nonlinear (probabilistic) | Nonlinear (topological) |
+| **Core Idea** | Find orthogonal axes that maximize variance | Match pairwise similarities (Gaussian → t-distribution) | Preserve manifold structure via fuzzy graphs |
+| **Mathematical Form** | Eigen-decomposition of covariance matrix | KL-divergence minimization between pairwise probabilities | Cross-entropy minimization between fuzzy graphs |
+| **Projection** | $y = XW$ (explicit linear mapping) | Directly optimizes low-dim coordinates | Directly optimizes low-dim coordinates |
+| **Interpretability** | High — each axis is a linear combo of original features | None — nonlinear, axes have no clear meaning | None — nonlinear, focuses on topology |
+| **Preserves** | Global variance structure | Local neighborhood structure | Local *and* some global manifold geometry |
+| **Scalability** | Excellent — $O(nd^2)$ | Poor — $O(n^2)$ | Very good — $O(n \log n)$ (with NN-Descent) |
+| **Stochasticity** | Deterministic | Stochastic (different runs vary) | Slightly stochastic (due to random init) |
+| **Hyperparameters** | None (just #components) | Perplexity, learning rate | $n\_neighbors$, $min\_dist$, metric |
+| **Output Dim** | Any | Usually 2D or 3D | Usually 2D or 3D |
+| **Use Case** | Data compression, feature decorrelation | Visualization of clusters / manifolds | Visualization and general nonlinear embedding |
+| **Strengths** | Simple, interpretable, fast | Excellent local cluster separation | Fast, preserves both local & global structure |
+| **Weaknesses** | Linear only | Slow, poor global preservation | Harder to interpret, hyperparameter sensitive |
+
+---
+
+### 🧭 Intuitive Summary
+
+- **PCA** → best when structure is mostly **linear** and interpretability matters.  
+- **t-SNE** → great for visualizing **local clusters**, but loses global relations and scales poorly.  
+- **UMAP** → combines both worlds: captures nonlinear structure, scales to large data, and preserves manifold shape better.
+
+---
+
+### 📈 Quick Heuristic for Choosing
+
+| Goal | Recommended Method |
+|------|---------------------|
+| Feature reduction for regression/classification | **PCA** |
+| Exploratory visualization (small dataset) | **t-SNE** |
+| Large-scale visualization / manifold learning | **UMAP** |
+
+---
+
+✅ **Summary**
+
+UMAP stands out as the modern default for nonlinear visualization:
+- It captures **local** and **global** structures,
+- Scales nearly linearly via **NN-Descent**, and
+- Produces layouts that are often both interpretable and visually stable.
+
+PCA remains the go-to for **interpretable linear compression**,  
+while t-SNE remains useful when extreme **local separation** is desired despite its computational cost.
