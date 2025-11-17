@@ -3,4 +3,6 @@
 ## Clustering
 
 ## Dimensional Reduction
-- [PCA]()
+- [PCA](pca.md)
+- [tsne-umap](tsne-umap.md)
+- [clustering](clustering.md)
