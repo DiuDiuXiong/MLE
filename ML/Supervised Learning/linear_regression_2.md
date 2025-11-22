@@ -674,6 +674,51 @@ $$
 
 ---
 
+### 🔲 Matrix “Rectangle” view (gradient intuition)
+
+Elastic Net gradient combines ridge-like shrinkage and lasso-like sparsity pressure:
+$$
+\underbrace{
+\begin{bmatrix}
+\leftarrow & x_1^\top & \rightarrow \\
+\leftarrow & x_2^\top & \rightarrow \\
+\vdots & \vdots & \vdots \\
+\leftarrow & x_n^\top & \rightarrow
+\end{bmatrix}
+}_{X^\top}
+\;
+\underbrace{
+\begin{bmatrix}
+\hat{y}_1 - y_1\\
+\hat{y}_2 - y_2\\
+\vdots\\
+\hat{y}_m - y_m
+\end{bmatrix}
+}_{(\hat y - y)}
+\;+\;
+\underbrace{
+\begin{bmatrix}
+\lambda(1-\alpha)w_1\\
+\lambda(1-\alpha)w_2\\
+\vdots\\
+\lambda(1-\alpha)w_n
+\end{bmatrix}
+}_{\text{L2 shrink}}
+\;+\;
+\underbrace{\lambda\alpha\,\partial\|w\|_1}_{\text{L1 soft-threshold}}
+\;\Rightarrow\;
+\underbrace{
+\begin{bmatrix}
+\frac{\partial L}{\partial w_1}\\
+\frac{\partial L}{\partial w_2}\\
+\vdots\\
+\frac{\partial L}{\partial w_n}
+\end{bmatrix}
+}_{\nabla_w L}
+$$
+
+---
+
 ### 🧠 Summary
 
 | Aspect | Elastic Net behavior |
@@ -686,15 +731,14 @@ $$
 | Use when | You want **sparsity** but also **robustness to multicollinearity** and better conditioning |
 
 ---
-
 ## 🔸 Comparison: OLS vs Ridge vs Lasso vs Elastic Net
 
-| Method | Penalty Term | Key Property | Solution Form | Can Set $w_j=0$? | Typical Use Case |
-|:-------|:--------------|:--------------|:---------------|:-----------------|:----------------|
-| **Ordinary Least Squares (OLS)** | None | Minimizes pure squared error | $\tilde{w}=(\tilde{X}^\top\tilde{X})^{-1}\tilde{X}^\top y$ | ❌ | Baseline model when $n<m$ and features are well-conditioned |
-| **Ridge (L2)** | $\frac{\lambda}{2}\|w\|_2^2$ | Shrinks all weights smoothly, stabilizes inversion | $(X^\top X + m\lambda I)^{-1}X^\top y$ | ❌ | Multicollinearity or many small correlated features |
-| **Lasso (L1)** | $\lambda\|w\|_1$ | Drives some weights exactly to zero (sparsity) | No closed form — uses coordinate descent with soft-thresholding | ✅ | Feature selection; high-dimensional, sparse problems |
-| **Elastic Net (L1+L2)** | $\lambda\big[(1-\alpha)\frac{\|w\|_2^2}{2}+\alpha\|w\|_1\big]$ | Combines sparsity + grouping; balances L1 and L2 | $w_j \leftarrow \dfrac{\mathcal{S}(b_j,\lambda\alpha)}{a_j+\lambda(1-\alpha)}$ | ✅ (but less aggressive than pure L1) | Correlated features, need both feature selection and stability |
+| Method | Penalty Term                                                                           | Key Property | Solution Form | Can Set w_j = 0? | Typical Use Case |
+|:-------|:---------------------------------------------------------------------------------------|:------------|:--------------|:-----------------|:-----------------|
+| **Ordinary Least Squares (OLS)** | *None*                                                                                 | Minimizes pure squared error | `w~ = (X^T X)^(-1) X^T y` | ❌ | Baseline model when n < m and features are well-conditioned |
+| **Ridge (L2)** | `(λ/2) \|    \|w \| \|_2^2`                                                            | Shrinks all weights smoothly, stabilizes inversion | `w = (X^T X + m λ I)^(-1) X^T y` | ❌ | Multicollinearity or many small correlated features |
+| **Lasso (L1)** | `λ                          \| \|w \| \|_1`                                            | Drives some weights exactly to zero (sparsity) | No closed form — uses coordinate descent with soft-thresholding | ✅ | Feature selection; high-dimensional, sparse problems |
+| **Elastic Net (L1+L2)** | `λ[(1-α)                                    \|  \|w \| \|_2^2 / 2 + α \| \|w \| \|_1]` | Combines sparsity + grouping; balances L1 and L2 | `w_j ← S(b_j, λ α) / (a_j + λ (1-α))` | ✅ (but less aggressive than pure L1) | Correlated features, need both feature selection and stability |
 
 ---
 
@@ -754,3 +798,4 @@ In other words:
 where  
 $\mathcal{S}(b_j,\lambda)=\operatorname{sign}(b_j)\max\{|b_j|-\lambda,0\}$  
 and $a_j=\tfrac{1}{m}\|x_j\|_2^2,\;b_j=\tfrac{1}{m}x_j^\top r^{(j)}$.
+
