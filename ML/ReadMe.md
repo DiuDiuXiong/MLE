@@ -5,3 +5,4 @@
 - Other
   - [Kernel Method](./kernel_method.md)
   - [Optimisation](./optimisation.md)
+  - [Evaluations](./evaluations.md)
