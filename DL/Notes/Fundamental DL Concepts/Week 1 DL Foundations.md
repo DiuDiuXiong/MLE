@@ -547,3 +547,4 @@ If your training crashes or loss doesn't move, check these:
 ### 10.2 Forward pass (Linear $\rightarrow$ ReLU $\rightarrow$ Linear)
 ### 10.3 Computing Loss and Gradients manually
 ### 10.4 The Update loop
+
