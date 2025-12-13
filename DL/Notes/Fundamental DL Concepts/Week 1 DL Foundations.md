@@ -501,22 +501,156 @@ If your training crashes or loss doesn't move, check these:
 
 ---
 
-## 4. Initialization & Normalization: Keeping the Signal Alive
-### 4.1 The Goal: Mean=0, Variance=1 (Signal Preservation)
-### 4.2 Failure Modes: What happens when Init goes wrong?
-#### 4.2.1 The "Symmetry Trap" (Why Zero Init = Single Neuron Network)
-#### 4.2.2 The "Vanishing Signal" (Small weights $\rightarrow$ Activations decay to 0)
-#### 4.2.3 The "Exploding Signal" (Large weights $\rightarrow$ NaNs and Inf)
-### 4.3 The Modern Standards: Xavier (Glorot) vs Kaiming (He)
-### 4.4 Normalization Layers: Forcing statistics during training
-#### 4.4.1 BatchNorm (Vertical/Batch-wise) vs LayerNorm (Horizontal/Sample-wise)
-#### 4.4.2 The "Running Stats" gotcha in BatchNorm (Train vs Eval mode)
+# 4. Initialization & Normalization: Keeping the Signal Alive
+
+If Backprop is the engine, **Initialization** is the starter motor. If you try to start in 5th gear (bad weights), you stall immediately. (Note this is a separate topic from vanishing gradient.)
+
+## 4.1 The Goal: Signal Preservation (Mean=0, Variance=1)
+
+A Deep Neural Network is essentially a long signal processing chain.
+1.  **Forward Pass:** We want the input signal (variance) to flow all the way to the output without exploding to infinity or vanishing to zero.
+2.  **Backward Pass:** We want the gradient signal to flow all the way back to the input without dying.
+
+**The "Healthy" Network State:**
+Ideally, the activations (input output x y) at every layer should have (it's not about gradient, it's about x, y themselves):
+* **Mean $\approx$ 0:** Data is centered.
+* **Variance $\approx$ 1:** Signal strength is maintained.
+
+If variance drops to 0, the network dies (no information). If it grows to $10^6$, the network saturates or hits `NaN`.
+
+---
+
+## 4.2 Failure Modes: What happens when Init goes wrong?
+
+There are three classic ways initialization kills a network.
+
+### 4.2.1 The "Symmetry Trap" (Why Zero Init = Single Neuron Network)
+* **Scenario:** You initialize all weights to 0. $W = 0$.
+* **The Result:**
+    * Every neuron in the layer receives the same input ($0$).
+    * Every neuron computes the same output.
+    * Every neuron receives the same gradient.
+* **Consequence:** All neurons update in perfect lockstep. You effectively have a layer with **1 neuron**. You need random noise to "break symmetry."
+
+### 4.2.2 The "Vanishing Signal"
+* **Scenario:** You initialize with very small random numbers (e.g., $W \sim N(0, 0.01)$).
+* **The Math:** $y = Wx$. If weights are tiny ($< 1$), the signal shrinks at every layer.
+    $$0.01 \times 0.01 \times 0.01 \dots \approx 0$$
+* **Consequence:** By layer 5, your activations are effectively zero. The gradient calculation involves multiplying by these activations, so your gradients are also zero. The network stops learning.
+
+### 4.2.3 The "Exploding Signal"
+* **Scenario:** You initialize with Standard Normal ($W \sim N(0, 1)$).
+* **The Math:** Consider a linear layer with 512 inputs. The variance of the output is the sum of variances of inputs.
+    $$\text{Var}(y) \approx N_{in} \times \text{Var}(w) \times \text{Var}(x)$$
+    With $N_{in}=512$ and $\text{Var}(w)=1$, the variance is multiplied by **512** at every layer.
+* **Consequence:**
+    * Layer 1: Var $\approx$ 512
+    * Layer 2: Var $\approx$ 260,000
+    * Layer 3: Var $\approx$ Infinity (Overflow / NaN).
+
+---
+
+## 4.3 The Modern Standards: Xavier vs Kaiming
+
+To prevent explosion/vanishing, we need the variance of the weights to act as a "counter-weight" to the number of inputs ($N_{in}$).
+
+We want $\text{Var}(y) = \text{Var}(x)$, which implies we need $\text{Var}(w) = \frac{1}{N_{in}}$.
+
+### 4.3.1 Xavier (Glorot) Initialization
+* **Formula:** $W \sim N(0, \frac{1}{N_{in}})$ or Uniform equivalent.
+* **Best For:** **Sigmoid** or **Tanh** activations.
+* **Logic:** Assumes the activation function is linear (derivative $\approx$ 1) near zero.
+
+### 4.3.2 Kaiming (He) Initialization
+* **Formula:** $W \sim N(0, \frac{2}{N_{in}})$
+* **Best For:** **ReLU** activations.
+* **Logic:** ReLU sets all negative numbers to 0, effectively "killing" half the variance of the signal. To compensate for this signal loss, Kaiming init **doubles** the variance of the weights compared to Xavier.
+* *Note:* This is the PyTorch default for `nn.Linear` and `nn.Conv2d`.
+* This can be genralized to $W \sim N(0, \frac{1}{N_{in}  *  Var(activation(x))})$
+
+---
+
+
+
+## 4.4 Normalization Layers: Forcing statistics
+
+Instead of hoping initialization preserves statistics, we can explicitly **force** the data to be clean ($mean=0, std=1$) at every step using Normalization layers.
+
+### 4.4.1 Visualizing the Axis (Tensor Walkthrough)
+To understand the difference, let's look at a concrete tensor $X$ of shape **(Batch=3, Features=4)**.
+Think of this as a batch of 3 samples, where each sample has 4 features.
+
+$$
+X = \begin{bmatrix}
+\text{Sample 1} \\
+\text{Sample 2} \\
+\text{Sample 3}
+\end{bmatrix} =
+\begin{bmatrix}
+10 & 20 & 30 & 40 \\
+1 & 2 & 3 & 4 \\
+100 & 200 & 300 & 400
+\end{bmatrix}
+$$
+
+
+
+**1. Batch Normalization (Vertical / Column-wise)**
+BN normalizes each **feature channel** independently across the batch.
+* **Logic:** *"For Feature 1 (Column 1), how does Sample 1 compare to Sample 2 and 3?"*
+* **The Operation:** Take Column 1 `[10, 1, 100]`. Calculate $\mu \approx 37, \sigma \approx 45$. Normalize just these 3 numbers.
+* **Result:** Sample 1 and Sample 2 share the same mean/std statistics for this feature.
+
+**2. Layer Normalization (Horizontal / Row-wise)**
+LN normalizes each **sample** independently across its own features.
+* **Logic:** *"For Sample 1 (Row 1), how does Feature 1 compare to Feature 2, 3, and 4?"*
+* **The Operation:** Take Row 1 `[10, 20, 30, 40]`. Calculate $\mu=25, \sigma \approx 11$. Normalize just these 4 numbers.
+* **Result:** Sample 1 calculates its own statistics strictly from its own data.
+
+### 4.4.2 Summary Comparison
+
+| Feature | **Batch Normalization (BN)** | **Layer Normalization (LN)** |
+| :--- | :--- | :--- |
+| **Concept** | Normalize "down" the batch (Vertical). | Normalize "across" the features (Horizontal). |
+| **Stats Source** | Derived from **other samples** in the batch. | Derived from **the sample itself**. |
+| **Best For** | **Computer Vision (CNNs)**. Images have fixed dimensions and we care about global statistics per pixel/channel. | **NLP (Transformers)**. Sequence lengths vary; dependencies across the batch don't make sense. |
+| **Dependency** | Depends on Batch Size (Breaks if Batch=1). | Independent of Batch Size. |
+
+### 4.4.3 The "Running Stats" Gotcha in BatchNorm
+
+BatchNorm is unique because it behaves differently during **Training** vs **Inference**.
+
+1.  **Training:** It calculates mean/std based on the **current batch** of data. It also updates a "running average" of these stats in the background.
+2.  **Inference (Eval):** We cannot calculate stats on a single image (variance of 1 item is undefined). It uses the **running average** collected during training.
+
+**The Bug:**
+If you forget to call `model.eval()` before running inference:
+* PyTorch tries to compute mean/std on your single input image.
+* The predictions become garbage.
+* *Fix:* Always switch modes: `model.train()` $\leftrightarrow$ `model.eval()`.
 
 ## 5. Activation Functions: The Non-Linearity
+
 ### 5.1 Why we need them (The "Collapsing Linear" Proof)
-### 5.2 The "S-Curves": Sigmoid & Tanh (and why they vanish)
-### 5.3 The Modern Standards: ReLU & GELU
-### 5.4 The "Dead Neuron" problem (and how LeakyReLU fixes it)
+* *Why a Deep Network without activations is just a Single Linear Layer.*
+
+### 5.2 The "S-Curves": Sigmoid & Tanh (The "Squashing" Effect)
+* **The Shape:** Bell-curve derivatives.
+* **The Variance Check:** If input $x \sim N(0,1)$, Tanh squashes the outliers, reducing variance slightly. Sigmoid squashes it massively.
+* **The Failure:** Vanishing Gradients (Derivative $\approx 0$ at tails).
+
+### 5.3 The Modern Standard: ReLU (The "Halving" Effect)
+* **The Shape:** Piecewise linear ($y = max(0, x)$).
+* **The Variance Check:** ReLU deletes half the data (negatives become 0).
+    * Result: $\text{Var}(\text{ReLU}(x)) \approx 0.5 \cdot \text{Var}(x)$.
+    * *Link to Section 4:* This is exactly why Kaiming Init uses a factor of **2**! It boosts variance to survive this "halving."
+
+### 5.4 The "Dead Neuron" Problem
+* **The Trap:** If a ReLU neuron gets stuck in the negative zone, gradient is 0 forever.
+* **The Fix:** LeakyReLU (allow a tiny leak) or GELU (smooth curvature).
+
+### 5.5 Advanced: GELU & Swish (The "Smooth" Standards)
+* **Why Transformers use GELU:** Avoiding the sharp "kink" at 0 helps optimization in very deep networks.
 
 ## 6. Loss Functions & Numerical Stability
 ### 6.1 Softmax + Cross-Entropy: The "Logits" Pipeline
