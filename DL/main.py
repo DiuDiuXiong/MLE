@@ -6,5 +6,6 @@ def test_basic_gpu():
     print("GPU name:", torch.cuda.get_device_name(0))
 
 if __name__ == "__main__":
-    print(1+1)
+    test_basic_gpu()
+
 
