@@ -17,3 +17,7 @@ python3 -m pip install torch torchvision torchaudio --index-url https://download
 python3 -m pip install scikit-learn
 
 python3 -m pip install pandas
+
+python3 -m pip install pyarrow fastparquet
+
+python3 -m pip install plt
