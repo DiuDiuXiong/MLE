@@ -23,3 +23,5 @@ python3 -m pip install pyarrow fastparquet
 python3 -m pip install plt
 
 python3 -m pip install opencv-python
+
+python3 -m pip install types-pytz
