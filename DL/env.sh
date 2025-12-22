@@ -21,3 +21,5 @@ python3 -m pip install pandas
 python3 -m pip install pyarrow fastparquet
 
 python3 -m pip install plt
+
+python3 -m pip install opencv-python
